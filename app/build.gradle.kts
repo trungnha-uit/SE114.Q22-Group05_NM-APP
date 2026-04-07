@@ -1,9 +1,17 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
 }
 
+val properties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    properties.load(localPropertiesFile.inputStream())
+}
+
 android {
-    namespace = "com.example.Tour_Booking_App"
+    namespace = "com.example.tourgo"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -11,13 +19,20 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.Tour_Booking_App"
+        applicationId = "com.example.tourgo"
         minSdk = 29
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "SUPABASE_URL", "\"${properties.getProperty("SUPABASE_URL")}\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${properties.getProperty("SUPABASE_ANON_KEY")}\"")
+
+        buildFeatures {
+            buildConfig = true
+        }
     }
 
     buildTypes {
@@ -48,6 +63,7 @@ dependencies {
 
     implementation("androidx.security:security-crypto:1.1.0")
 
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

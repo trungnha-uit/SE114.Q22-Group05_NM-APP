@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Booking_Tour_App"
+rootProject.name = "TourGo"
 include(":app")
