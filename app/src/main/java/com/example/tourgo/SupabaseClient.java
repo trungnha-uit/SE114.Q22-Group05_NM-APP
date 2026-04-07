@@ -20,16 +20,10 @@ public class SupabaseClient {
     private static final OkHttpClient client = new OkHttpClient();
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
-    // ================================================================
-    // 1. HÀM ĐĂNG KÝ
-    // Sau khi register thành công, trigger trên Supabase sẽ tự động
-    // insert vào bảng users với role phù hợp (admin/user)
-    // ================================================================
     public static void register(String email, String password, String name, AuthCallback callback) {
         String url = SUPABASE_URL + "/auth/v1/signup";
 
         try {
-            // Truyền name vào user_metadata để trigger function sử dụng
             JSONObject metadata = new JSONObject();
             metadata.put("name", name);
 
@@ -62,10 +56,6 @@ public class SupabaseClient {
         }
     }
 
-    // ================================================================
-    // 2. HÀM ĐĂNG NHẬP
-    // Trả về access_token + user info
-    // ================================================================
     public static void login(String email, String password, AuthCallback callback) {
         String url = SUPABASE_URL + "/auth/v1/token?grant_type=password";
 
@@ -98,10 +88,6 @@ public class SupabaseClient {
         }
     }
 
-    // ================================================================
-    // 3. HÀM QUÊN MẬT KHẨU
-    // Gửi email reset password
-    // ================================================================
     public static void resetPassword(String email, AuthCallback callback) {
         String url = SUPABASE_URL + "/auth/v1/recover";
 
@@ -132,13 +118,7 @@ public class SupabaseClient {
         }
     }
 
-    // ================================================================
-    // 4. HÀM LẤY THÔNG TIN USER TỪ BẢNG USERS
-    // Cần truyền accessToken (lấy từ response login)
-    // ================================================================
     public static void getUserProfile(String accessToken, AuthCallback callback) {
-        // Dùng PostgREST API để query bảng users, lọc theo user hiện tại
-        // select=* sẽ trả về tất cả columns
         String url = SUPABASE_URL + "/rest/v1/users?select=*";
 
         try {
@@ -171,13 +151,8 @@ public class SupabaseClient {
         }
     }
 
-    // ================================================================
-    // 5. HÀM CẬP NHẬT THÔNG TIN USER (name, avatar)
-    // Cần truyền accessToken và userId
-    // ================================================================
     public static void updateUserProfile(String accessToken, String userId,
                                          String name, String avatar, AuthCallback callback) {
-        // PATCH request đến bảng users, filter theo id
         String url = SUPABASE_URL + "/rest/v1/users?id=eq." + userId;
 
         try {
@@ -217,11 +192,6 @@ public class SupabaseClient {
         }
     }
 
-    // ================================================================
-    // HÀM PHỤ TRỢ
-    // ================================================================
-
-    // Gắn Header (apikey) cho Auth API requests
     private static Request buildAuthRequest(String url, RequestBody body) {
         return new Request.Builder()
                 .url(url)
