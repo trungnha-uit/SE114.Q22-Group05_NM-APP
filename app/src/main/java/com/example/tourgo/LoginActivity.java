@@ -1,4 +1,4 @@
-package com.example.Tour_Booking_App;
+package com.example.tourgo;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,7 +11,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.example.Tour_Booking_App.databinding.ActivityLoginBinding;
+import com.example.tourgo.databinding.ActivityLoginBinding;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -34,9 +34,9 @@ public class LoginActivity extends AppCompatActivity {
 
         session = new SessionManager(this);
         if(session.isLoggedIn()){
-            Intent intent = new Intent(LoginActivity.this, TempActivity.class); //TODO: Change to HomeActivity
-            startActivity(intent);
-            finish();
+            binding.etLoginEmail.setText(session.getEmail());
+            binding.etLoginPassword.setText(session.getPassword());
+            binding.cbLoginRemember.setChecked(true);
         }
 
         validateEmail();
@@ -53,20 +53,30 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         binding.btnLogin.setOnClickListener(v -> {
-            // TODO: Wait for DB
-            String token = "";  //from DB
-            String userID = ""; //from DB
-            Boolean result = false; //from DB
+            String email = binding.etLoginEmail.getText().toString().trim();
+            String password = binding.etLoginPassword.getText().toString();
 
-            if(result){
-                Intent intent = new Intent(LoginActivity.this, TempActivity.class); //TODO: Change to HomeActivity
-                startActivity(intent);
-                finish();
-            }
+            SupabaseClient.login(email, password, new AuthCallback() {
+                @Override
+                public void onSuccess(String responseData) {
+                    if(binding.cbLoginRemember.isChecked()) {
+                        session.saveUser(email, password);
+                    }else {
+                        session.clear();
+                    }
 
-            if(binding.cbLoginRemember.isChecked() && result){
-                session.saveSession(token, userID);
-            }
+                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
+
+                @Override
+                public void onError(String errorMessage) {
+                    runOnUiThread(() -> {
+                        binding.tilLoginEmail.setError("Sai email hoặc mật khẩu");
+                    });
+                }
+            });
         });
     }
 
@@ -76,7 +86,7 @@ public class LoginActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
                 if (!android.util.Patterns.EMAIL_ADDRESS.matcher(s).matches()
                         || s.toString().trim().isEmpty()) {
-                    binding.tilLoginEmail.setError("Invalid email address");
+                    binding.tilLoginEmail.setError("Địa chỉ email không hợp lệ");
                 } else {
                     binding.tilLoginEmail.setError(null);
                 }
@@ -95,7 +105,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {
                 if (s.toString().isEmpty()) {
-                    binding.tilLoginPassword.setError("Password cannot be empty");
+                    binding.tilLoginPassword.setError("Mật khẩu không được để trống");
                 } else {
                     binding.tilLoginPassword.setError(null);
                 }
