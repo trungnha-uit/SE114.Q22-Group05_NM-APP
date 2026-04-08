@@ -43,8 +43,7 @@ public class LoginActivity extends AppCompatActivity {
         validatePassword();
 
         binding.tvForgotPassword.setOnClickListener(v -> {
-            Intent intent = new Intent(LoginActivity.this, ForgotPassActivity.class);
-            startActivity(intent);
+            new ForgotPasswordDialog().show(getSupportFragmentManager(), "forgot_password");
         });
 
         binding.tvLoginSignUp.setOnClickListener(v -> {

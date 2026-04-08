@@ -14,17 +14,27 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TourGo">
         <activity
-            android:name=".ForgotPassActivity"
-            android:exported="false" />
+            android:name=".ResetPasswordActivity"
+            android:exported="true" >
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="tourgo"
+                    android:host="reset" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".RegisterActivity"
             android:exported="false" />
-        <activity android:name=".MainActivity"
-            android:exported="false"/>
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
         <activity
             android:name=".LoginActivity"
-            android:theme="@style/Theme.TourGo"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.TourGo">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
