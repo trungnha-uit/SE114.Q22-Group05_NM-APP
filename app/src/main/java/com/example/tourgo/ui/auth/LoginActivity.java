@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.widget.Toast; // Thêm Toast
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -26,6 +27,14 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        session = new SessionManager(this);
+
+        if (session.isLoggedIn()) {
+            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+            finish();
+            return;
+        }
+
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         EdgeToEdge.enable(this);
@@ -35,13 +44,6 @@ public class LoginActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0);
             return insets;
         });
-
-        session = new SessionManager(this);
-        if(session.isLoggedIn()){
-            binding.etLoginEmail.setText(session.getEmail());
-            binding.etLoginPassword.setText(session.getPassword());
-            binding.cbLoginRemember.setChecked(true);
-        }
 
         validateEmail();
         validatePassword();
@@ -59,34 +61,34 @@ public class LoginActivity extends AppCompatActivity {
             String email = binding.etLoginEmail.getText().toString().trim();
             String password = binding.etLoginPassword.getText().toString();
 
-            if(email.isEmpty() || password.isEmpty()) {
-                if(email.isEmpty()) {
-                    binding.tilLoginEmail.setError("Địa chỉ email không được để trống");
-                }
-                if(password.isEmpty()) {
-                    binding.tilLoginPassword.setError("Mật khẩu không được để trống");
-                }
+            if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                binding.tilLoginEmail.setError("Vui lòng nhập email hợp lệ");
+                return;
+            }
+            if (password.isEmpty()) {
+                binding.tilLoginPassword.setError("Vui lòng nhập mật khẩu");
                 return;
             }
 
             SupabaseClient.login(email, password, new AuthCallback() {
                 @Override
                 public void onSuccess(String responseData) {
-                    if(binding.cbLoginRemember.isChecked()) {
-                        session.saveUser(email, password);
-                    }else {
-                        session.clear();
-                    }
-
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                    startActivity(intent);
-                    finish();
+                    runOnUiThread(() -> {
+                        if (binding.cbLoginRemember.isChecked()) {
+                            session.saveUser(email, password);
+                        } else {
+                            session.clear();
+                        }
+                        Toast.makeText(LoginActivity.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                        finish();
+                    });
                 }
 
                 @Override
                 public void onError(String errorMessage) {
                     runOnUiThread(() -> {
-                        binding.tilLoginEmail.setError("Sai email hoặc mật khẩu");
+                        Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_LONG).show();
                     });
                 }
             });
@@ -97,17 +99,17 @@ public class LoginActivity extends AppCompatActivity {
         binding.etLoginEmail.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
-                if (!android.util.Patterns.EMAIL_ADDRESS.matcher(s).matches()
-                        || s.toString().trim().isEmpty()) {
-                    binding.tilLoginEmail.setError("Địa chỉ email không hợp lệ");
+                String email = s.toString().trim();
+                if (email.isEmpty()) {
+                    binding.tilLoginEmail.setError("Email không được để trống");
+                } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    binding.tilLoginEmail.setError("Định dạng email không hợp lệ");
                 } else {
                     binding.tilLoginEmail.setError(null);
                 }
             }
-
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {}
         });
@@ -123,10 +125,8 @@ public class LoginActivity extends AppCompatActivity {
                     binding.tilLoginPassword.setError(null);
                 }
             }
-
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {}
         });

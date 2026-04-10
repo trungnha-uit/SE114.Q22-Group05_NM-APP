@@ -69,7 +69,7 @@ public class RegisterActivity extends AppCompatActivity {
                                 return;
                             }
 
-                            Toast.makeText(RegisterActivity.this, "Đăng ký thành công! Hãy xác nhận email.", Toast.LENGTH_LONG).show();
+                            Toast.makeText(RegisterActivity.this, "Đăng ký thành công!", Toast.LENGTH_LONG).show();
                             Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                             startActivity(intent);
